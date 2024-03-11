@@ -1,0 +1,16 @@
+{
+    "emitLegacyScripts": false,
+    "name": "canaryCLI-dev",
+    "tree": {
+        "$className": "DataModel",
+        "ReplicatedStorage": {
+            "Packages": {
+                "$path": "Packages",
+                "CLI": {"$path": "src"}
+            },
+            "Tests": {
+                "$path": "tests/client"
+            }
+        }
+    }
+}
