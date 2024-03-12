@@ -1,31 +1,52 @@
+-- // Variables
+
 local CommandList = require(script.Parent.CommandParser).CommandList
-local SuggestionText: TextLabel = game.Players.LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("ScreenGui").SuggestionText
+local SuggestionText: TextLabel =
+	game.Players.LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("CanaryCLI").SuggestionText
+local SUGGESTION_PADDING = 4 + 16
 
-local function UpdateAutocomplete(input: string, inputGui: TextBox)
-    if input == "" then
-        SuggestionText.Text = ""
-        SuggestionText.Position = UDim2.fromOffset(0, 0)
-        return
-    end
+-- // Functions
 
-    local FilteredSuggestions = {}
+local function UpdateAutocomplete(inputGui: TextBox): string?
+	if inputGui.Text == "" then
+		SuggestionText.Text = ""
+		return nil
+	end
 
-    for commandName in pairs(CommandList) do
-        local lowerInput = input:lower()
-        if commandName:sub(1, #lowerInput) == lowerInput then
-            table.insert(FilteredSuggestions, commandName)
-        end
-    end
+	local Suggestion = nil
 
-    if #FilteredSuggestions == 0 then
-        SuggestionText.Text = "Nothing found"
-        SuggestionText.Position = UDim2.fromOffset(inputGui.TextBounds.X + 16, 0)
-    else
-        SuggestionText.Text = FilteredSuggestions[1]
-        SuggestionText.Position = UDim2.fromOffset(inputGui.TextBounds.X + 16, 0)
-    end
+	for commandName in pairs(CommandList) do
+		local lowerInput = inputGui.Text:lower()
+		if string.sub(commandName, 1, #lowerInput) == lowerInput then
+			Suggestion = commandName
+			break
+		end
+	end
+
+	if inputGui.Text == Suggestion then
+		SuggestionText.Text = ""
+		return nil
+	end
+
+	if not Suggestion then
+		SuggestionText.Text = "Nothing found"
+		SuggestionText.Position = UDim2.fromOffset(
+			inputGui.TextBounds.X + SUGGESTION_PADDING + inputGui.AbsolutePosition.X,
+			inputGui.AbsolutePosition.Y
+		)
+		return nil
+	else
+		SuggestionText.Text = Suggestion
+		SuggestionText.Position = UDim2.fromOffset(
+			inputGui.TextBounds.X + SUGGESTION_PADDING + inputGui.AbsolutePosition.X,
+			inputGui.AbsolutePosition.Y
+		)
+		return Suggestion
+	end
 end
 
+-- // Actions
+
 return {
-    UpdateAutocomplete = UpdateAutocomplete
+	UpdateAutocomplete = UpdateAutocomplete,
 }

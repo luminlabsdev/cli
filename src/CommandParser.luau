@@ -1,5 +1,9 @@
+-- // Variables
+
 local CommandModules = {}
 local CommandList = {}
+
+-- // Functions
 
 local function assertformat(value: any, errorMessage: string, ...: any)
 	if not value then
@@ -21,6 +25,8 @@ local function ParseCommands()
 		end
 	end
 end
+
+-- // Actions
 
 return {
 	CommandList = CommandList,
