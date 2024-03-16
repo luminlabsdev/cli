@@ -1,14 +1,33 @@
 -- // Variables
 
 local CommandList = require(script.Parent.CommandParser).CommandList
-local SuggestionText: TextLabel =
-	game.Players.LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("CanaryCLI").PaddingFrame.CommandBar.SuggestionText
+local PlayerService = game:GetService("Players")
+local PlayerGui = PlayerService.LocalPlayer:WaitForChild("PlayerGui")
+local CanaryCLI = PlayerGui:WaitForChild("CanaryCLI").PaddingFrame
+
+local CommandBarStroke: UIStroke = CanaryCLI.CommandBar.UIStroke
+local SuggestionText: TextLabel = CanaryCLI.CommandBar.SuggestionText
+
 local SUGGESTION_PADDING = 4
 
 -- // Functions
 
+local function UpdateCommandBarTheme(theme: "default" | "selected" | "error")
+	if theme == "default" then
+		SuggestionText.TextColor3 = Color3.fromRGB(178, 178, 178)
+		CommandBarStroke.Color = Color3.fromRGB(178, 178, 178)
+	elseif theme == "selected" then
+		SuggestionText.TextColor3 = Color3.fromRGB(178, 178, 178)
+		CommandBarStroke.Color = Color3.fromRGB(240, 240, 240)
+	elseif theme == "error" then
+		SuggestionText.TextColor3 = Color3.fromRGB(255, 100, 100)
+		CommandBarStroke.Color = Color3.fromRGB(255, 100, 100)
+	end
+end
+
 local function UpdateAutocomplete(inputGui: TextBox): string?
 	if inputGui.Text == "" then
+		UpdateCommandBarTheme("selected")
 		SuggestionText.Text = ""
 		return nil
 	end
@@ -24,23 +43,20 @@ local function UpdateAutocomplete(inputGui: TextBox): string?
 	end
 
 	if inputGui.Text == Suggestion then
+		UpdateCommandBarTheme("selected")
 		SuggestionText.Text = ""
 		return nil
 	end
 
 	if not Suggestion then
-		SuggestionText.Text = "Nothing found"
-		SuggestionText.Position = UDim2.fromOffset(
-			inputGui.TextBounds.X + SUGGESTION_PADDING,
-			0
-		)
+		UpdateCommandBarTheme("error")
+		SuggestionText.Text = "Invalid command"
+		SuggestionText.Position = UDim2.fromOffset(inputGui.TextBounds.X + SUGGESTION_PADDING, 0)
 		return nil
 	else
 		SuggestionText.Text = Suggestion
-		SuggestionText.Position = UDim2.fromOffset(
-			inputGui.TextBounds.X + SUGGESTION_PADDING,
-			0
-		)
+		UpdateCommandBarTheme("selected")
+		SuggestionText.Position = UDim2.fromOffset(inputGui.TextBounds.X + SUGGESTION_PADDING, 0)
 		return Suggestion
 	end
 end
@@ -48,7 +64,7 @@ end
 local function GetCurrentSuggestion(): (string?, boolean)
 	if SuggestionText.Text == "" then
 		return nil, true
-	elseif SuggestionText.Text == "Nothing found" then
+	elseif SuggestionText.Text == "Invalid command" then
 		return nil, false
 	else
 		return SuggestionText.Text, false
@@ -60,4 +76,5 @@ end
 return {
 	GetCurrentSuggestion = GetCurrentSuggestion,
 	UpdateAutocomplete = UpdateAutocomplete,
+	UpdateCommandBarTheme = UpdateCommandBarTheme,
 }

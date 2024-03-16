@@ -2,16 +2,22 @@
 
 local PlayerService = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 local PlayerGui = PlayerService.LocalPlayer:WaitForChild("PlayerGui")
 
 local COMMAND_BAR_HIDDEN_PIXELS = 80
 
 local Autocomplete = require(script.Parent.Autocomplete)
 
-local CommandBarScreenGui = PlayerGui:WaitForChild("CanaryCLI")
-local CommandBar = CommandBarScreenGui.PaddingFrame.CommandBar
-
+local CanaryCLI = PlayerGui:WaitForChild("CanaryCLI").PaddingFrame
+local CommandBar: TextBox = CanaryCLI.CommandBar
 local CommandBarEnabled = false
+
+local ErrorSound = Instance.new("Sound")
+ErrorSound.SoundId = "rbxassetid://288561972"
+ErrorSound.Name = "CanaryCLIError"
+ErrorSound.Parent = ReplicatedStorage
 
 -- // Functions
 
@@ -27,6 +33,7 @@ local function ToggleCommandBar(_, inputState)
 			)
 		else
 			CommandBarEnabled = true
+			CommandBar.Text = ""
 			CommandBar:CaptureFocus()
 			CommandBar:TweenPosition(
 				UDim2.fromScale(0.5, 1),
@@ -41,7 +48,7 @@ end
 -- // Connections
 
 CommandBar.FocusLost:Connect(function(enterPressed)
-	CommandBar.UIStroke.Color = Color3.fromRGB(178, 178, 178)
+	Autocomplete.UpdateCommandBarTheme("default")
 
 	if not enterPressed then
 		return
@@ -49,15 +56,22 @@ CommandBar.FocusLost:Connect(function(enterPressed)
 
 	local CurrentSuggestion, IsBlank = Autocomplete.GetCurrentSuggestion()
 
+	if not CurrentSuggestion and not IsBlank then
+		ErrorSound:Play()
+		Autocomplete.UpdateCommandBarTheme("error")
+		return
+	end
+
 	if IsBlank then
-		print(CommandBar.Text)
-		CommandBar.Text = ""
+		if CommandBar.Text ~= "" then
+			print(CommandBar.Text)
+		end
 		ToggleCommandBar(nil, Enum.UserInputState.Begin)
 		return
 	end
 
 	if CurrentSuggestion then
-		CommandBar.UIStroke.Color = Color3.fromRGB(240, 240, 240)
+		Autocomplete.UpdateCommandBarTheme("selected")
 		CommandBar.Text = CurrentSuggestion
 		RunService.RenderStepped:Wait()
 		CommandBar:CaptureFocus()
@@ -68,7 +82,12 @@ CommandBar.FocusLost:Connect(function(enterPressed)
 end)
 
 CommandBar.Focused:Connect(function()
-	CommandBar.UIStroke.Color = Color3.fromRGB(240, 240, 240)
+	local CurrentSuggestion, IsBlank = Autocomplete.GetCurrentSuggestion()
+	if not CurrentSuggestion and not IsBlank then
+		Autocomplete.UpdateCommandBarTheme("error")
+		return
+	end
+	Autocomplete.UpdateCommandBarTheme("selected")
 end)
 
 CommandBar:GetPropertyChangedSignal("Text"):Connect(function()
