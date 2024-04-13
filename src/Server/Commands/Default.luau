@@ -1,9 +1,10 @@
-local Types = require(script.Parent.Parent.Types)
+local Types = require(script.Parent.Parent.Parent.Types)
 return {
 	Teleport = {
 		Type = "server",
+		Level = 1,
 		Description = "Teleports the player to a player or position",
-		Arguments = { to = "playerName, Vector3" },
+		Arguments = { "playerName, Vector3" },
 		Command = function(to: Player | Vector3)
 			print("Teleport")
 		end,
@@ -11,8 +12,9 @@ return {
 
 	Bring = {
 		Type = "server",
+		Level = 1,
 		Description = "Brings the player to you",
-		Arguments = { player = Types.CommandPlayer },
+		Arguments = { Types.CommandPlayer },
 		Command = function(player: Types.CommandPlayer)
 			print("Bring")
 		end,
@@ -20,8 +22,9 @@ return {
 
 	Kick = {
 		Type = "server",
+		Level = 2,
 		Description = "Removes the player from the game with a message",
-		Arguments = { player = Types.CommandPlayer, message = "string?" },
+		Arguments = { Types.CommandPlayer, "string?" },
 		Command = function(player: Types.CommandPlayer, message: string?)
 			print("Kick")
 		end,
@@ -29,17 +32,19 @@ return {
 
 	Ban = {
 		Type = "server",
+		Level = 3,
 		Description = "Bans the player from the whole game for a set amount of time",
-		Arguments = { player = Types.CommandPlayer, message = "string?", time = "number?" },
+		Arguments = { Types.CommandPlayer, "string?", "number?" },
 		Command = function(player: Types.CommandPlayer, message: string?, time: number?)
-			print("Ban")
+			print(player, message, time)
 		end,
 	},
 
 	ServerBan = {
 		Type = "server",
+		Level = 2,
 		Description = "Bans the player from the game server for a set amount of time",
-		Arguments = { player = Types.CommandPlayer, message = "string?", time = "number?" },
+		Arguments = { Types.CommandPlayer, "string?", "number?" },
 		Command = function(player: Types.CommandPlayer, message: string?, time: number?)
 			print("ServerBan")
 		end,
@@ -47,10 +52,11 @@ return {
 
 	Poll = {
 		Type = "server",
+		Level = 1,
 		Description = "Creates a poll GUI on the set player's screens",
-		Arguments = { player = Types.CommandPlayer, title = "string", options = "list<string>" },
+		Arguments = { Types.CommandPlayer, "string", "list<string>" },
 		Command = function(player: Types.CommandPlayer, title: string, options: { string })
 			print("Poll")
 		end,
 	},
-}
+} :: { [string]: Types.CommandData }

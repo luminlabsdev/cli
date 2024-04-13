@@ -9,7 +9,7 @@
                 "CLI": {"$path": "src"}
             },
             "Tests": {
-                "$path": "tests/client"
+                "$path": "tests"
             }
         }
     }

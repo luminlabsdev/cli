@@ -9,8 +9,9 @@ local PlayerGui = PlayerService.LocalPlayer:WaitForChild("PlayerGui")
 local COMMAND_BAR_HIDDEN_PIXELS = 175
 
 local Autocomplete = require(script.Parent.Autocomplete)
-local DefaultTheme = require(script.Parent.PackagedThemes.Default)
+local CommandParser = require(script.Parent.CommandParser)
 
+local PackagedThemes = script.Parent.Themes
 local CanaryCLI = PlayerGui:WaitForChild("CanaryCLI").PaddingFrame
 
 local CommandBar: TextBox = CanaryCLI.CommandBar
@@ -32,6 +33,8 @@ ErrorSound.Name = "CanaryCLIError"
 ErrorSound.Parent = ReplicatedStorage
 
 local CurrentThemeProperties: Theme = {}
+
+export type ThemeList = "Default" | "MidnightSynth" | "CatppuccinMocha"
 
 local ThemePropertyToRealProperty = {
 	BackgroundColor = "BackgroundColor3",
@@ -95,25 +98,38 @@ local function UpdateCommandBarTheme(theme: "inactive" | "active" | "error")
 	end
 end
 
-local function SetCommandBarTheme(theme: Theme)
-	for property, value in DefaultTheme do
-		if not theme[property] then
-			theme[property] = value
+local function SetCLITheme(theme: Theme | ThemeList)
+	if type(theme) == "string" then
+		local PackagedTheme = PackagedThemes:FindFirstChild(theme)
+		if PackagedTheme then
+			theme = (require)(PackagedTheme)
 		end
 	end
+
+	local NewCLITheme = theme :: Theme
 
 	for property, objects in ThemePropertyToObject do
 		for _, object in objects do
 			if property == "TextFontRegular" or property == "TextFontBold" and object:GetAttribute("Weight") then
-				object[ThemePropertyToRealProperty[property]] = theme[object:GetAttribute("Weight")]
+				object[ThemePropertyToRealProperty[property]] = NewCLITheme[object:GetAttribute("Weight")]
 			elseif property == "TextDescriptiveColor" and object:IsA("TextBox") then
-				object.PlaceholderColor3 = theme[property]
+				object.PlaceholderColor3 = NewCLITheme[property]
 			else
-				object[ThemePropertyToRealProperty[property]] = theme[property]
+				object[ThemePropertyToRealProperty[property]] = NewCLITheme[property]
 			end
-			CurrentThemeProperties[property] = theme[property]
+			CurrentThemeProperties[property] = NewCLITheme[property]
 		end
 	end
+end
+
+function RemoveBlanks(array: { any })
+	local result = {}
+	for _, str in array do
+		if str ~= "" then
+			table.insert(result, str)
+		end
+	end
+	return result
 end
 
 local function ToggleCommandBar(_, inputState)
@@ -154,7 +170,15 @@ CommandBar.FocusLost:Connect(function(enterPressed)
 
 	if IsBlank then
 		if CommandBar.Text ~= "" then
-			print(CommandBar.Text)
+			local SplitText = string.split(CommandBar.Text, " ")
+			local Arguments = RemoveBlanks(SplitText)
+			local CommandName = SplitText[1]
+			if SplitText[2] and SplitText[2] ~= "" then
+				table.remove(SplitText, 1)
+				CommandParser.SendCommand(CommandName, Arguments)
+			else
+				CommandParser.SendCommand(CommandName)
+			end
 		end
 		ToggleCommandBar(nil, Enum.UserInputState.Begin)
 		return
@@ -193,10 +217,11 @@ CommandBar:GetPropertyChangedSignal("Text"):Connect(function()
 	end
 end)
 
-SetCommandBarTheme(require(script.Parent.PackagedThemes.CatppuccinMocha))
+SetCLITheme("Default")
 
 -- // Actions
 
 return {
 	ToggleCommandBar = ToggleCommandBar,
+	SetCLITheme = SetCLITheme,
 }

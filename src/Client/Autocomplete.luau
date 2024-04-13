@@ -6,32 +6,15 @@ local PlayerService = game:GetService("Players")
 local PlayerGui = PlayerService.LocalPlayer:WaitForChild("PlayerGui")
 local CanaryCLI = PlayerGui:WaitForChild("CanaryCLI").PaddingFrame
 
-local CommandBarStroke: UIStroke = CanaryCLI.CommandBar.UIStroke
 local SuggestionText: TextLabel = CanaryCLI.CommandBar.SuggestionText
 
 local CommandBarDescriptionFrame: Frame = CanaryCLI.CommandBar.Description
-local CommandBarDescriptionStroke: UIStroke = CanaryCLI.CommandBar.Description.UIStroke
 local CommandBarDescription: TextLabel = CanaryCLI.CommandBar.Description.DescriptionText
 local CommandBarTitle: TextLabel = CanaryCLI.CommandBar.Description.TitleText
 
 local SUGGESTION_PADDING = 4
 
 -- // Functions
-
-function RemoveBlanks(array: {any})
-    local result = {}
-    for _, str in array do
-        if str ~= "" then
-            table.insert(result, str)
-        end
-    end
-    return result
-end
-
-local function GetCommandData(command: string): CommandParser.CommandData
-	assert(CommandList[command], "Command does not exist")
-	return CommandList[command]
-end
 
 local function UpdateAutocomplete(inputGui: TextBox): string | number
 	if inputGui.Text == "" then
@@ -52,17 +35,10 @@ local function UpdateAutocomplete(inputGui: TextBox): string | number
 	end
 
 	if SplitText[1] == Suggestion then
-		local CommandName = SplitText[1]
-		CommandBarDescription.Text = GetCommandData(Suggestion).Description
+		CommandBarDescription.Text = CommandParser.GetCommandData(Suggestion).Description
 		CommandBarTitle.Text = Suggestion
 		SuggestionText.Text = ""
 		CommandBarDescriptionFrame.Visible = true
-		if SplitText[2] and SplitText[2] ~= "" then
-			table.remove(SplitText, 1)
-			CommandParser.ParseCommandByInfo(CommandName, RemoveBlanks(SplitText))
-		else
-			CommandParser.ParseCommandByInfo(CommandName)
-		end
 		return 2
 	end
 
@@ -72,7 +48,7 @@ local function UpdateAutocomplete(inputGui: TextBox): string | number
 		CommandBarDescriptionFrame.Visible = false
 		return 3
 	else
-		CommandBarDescription.Text = GetCommandData(Suggestion).Description
+		CommandBarDescription.Text = CommandParser.GetCommandData(Suggestion).Description
 		CommandBarTitle.Text = Suggestion
 		SuggestionText.Text = Suggestion
 		SuggestionText.Position = UDim2.fromOffset(inputGui.TextBounds.X + SUGGESTION_PADDING, 0)
@@ -94,7 +70,6 @@ end
 -- // Actions
 
 return {
-	GetCommandData = GetCommandData,
 	GetCurrentSuggestion = GetCurrentSuggestion,
 	UpdateAutocomplete = UpdateAutocomplete,
 }
