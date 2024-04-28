@@ -53,9 +53,10 @@ local function ParseCommandByInfo(player: Player, commandName: string, arguments
 	if not Authorization.IsPlayerAuthorized(player, CommandData.Level) then
 		return "Player not authorized to run command"
 	end
+	print(arguments)
 	if #CommandData.Arguments ~= 0 and arguments then
 		if #CommandData.Arguments ~= #arguments then
-			return "Arguments not sent"
+			return "Arguments not sufficient"
 		end
 		return CommandData.Command(table.unpack(arguments))
 	else

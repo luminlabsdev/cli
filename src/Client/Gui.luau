@@ -175,9 +175,9 @@ CommandBar.FocusLost:Connect(function(enterPressed)
 			local CommandName = SplitText[1]
 			if SplitText[2] and SplitText[2] ~= "" then
 				table.remove(SplitText, 1)
-				CommandParser.SendCommand(CommandName, Arguments)
+				print(CommandParser.SendCommand(CommandName, Arguments))
 			else
-				CommandParser.SendCommand(CommandName)
+				print(CommandParser.SendCommand(CommandName))
 			end
 		end
 		ToggleCommandBar(nil, Enum.UserInputState.Begin)
